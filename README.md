@@ -26,7 +26,7 @@ To compile the verifier library to wasm i.e. some JS code that a browser can run
 
 `wasm-pack build --release --target web`
 
-The output is in `/pkg/`. The actually proof verification code lives in [pkg/verifier.js](./pkg/package.json
+The output is in `/pkg/`. The actually proof verification code lives in [pkg/verifier.js](./pkg/verifier.js).
 
 For more information, see [Building without a bundler](https://rustwasm.github.io/wasm-bindgen/examples/without-a-bundler.html).
 
