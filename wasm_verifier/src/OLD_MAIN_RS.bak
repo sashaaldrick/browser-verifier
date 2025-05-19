@@ -1,0 +1,6 @@
+use verifier::verify_receipt;
+
+#[cfg(not(target_arch = "wasm32"))]
+fn main() {
+    verify_receipt();
+}
