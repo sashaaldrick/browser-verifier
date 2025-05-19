@@ -1,0 +1,11 @@
+[package]
+name = "host"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+guest = { path = "../guest" }
+risc0-zkvm = { version = "^2.0.2" }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+serde = "1.0"
+borsh = { version = "1.5.7", default-features = false, features = ["derive"] }
