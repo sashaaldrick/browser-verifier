@@ -38,16 +38,17 @@ fn main() {
     let image_id_bytes = image_id_digest.as_bytes();
 
     // make sure data dir exists
-    create_dir_all("data").expect("Couldn't create data dir");
+    create_dir_all("../../../web/public/proof_data/").expect("Couldn't create data dir in web app");
 
     // save imageID bytes + receipt bytes to file
-    let mut receipt_file = File::create("data/receipt.bin").expect("Couldn't create receipt.bin");
+    let mut receipt_file = File::create("../../../web/public/proof_data/receipt.bin")
+        .expect("Couldn't create receipt.bin");
     receipt_file
         .write_all(&receipt_bytes)
         .expect("Couldn't write receipt data to receipt.bin");
 
-    let mut image_id_file =
-        File::create("data/image_id.bin").expect("Couldn't create image_id.bin");
+    let mut image_id_file = File::create("../../../web/public/proof_data/image_id.bin")
+        .expect("Couldn't create image_id.bin");
     image_id_file
         .write_all(&image_id_bytes)
         .expect("Couldn't write image ID to image_id.bin")
