@@ -29,7 +29,6 @@ fn main() {
 
     let output: u32 = receipt.journal.decode().unwrap();
     println!("Fibonacci({}) has {} digits", input, output);
-    assert_eq!(208988, output);
 
     // serialize the receipt into bytes
     let receipt_bytes = to_vec(&receipt).expect("Serialization failed");

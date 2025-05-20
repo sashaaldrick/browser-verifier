@@ -4,7 +4,7 @@ use wasm_bindgen::prelude::*;
 use web_sys::console;
 
 #[wasm_bindgen]
-pub fn verify_proof(proof_bytes: &[u8], image_id_bytes: &[u8]) -> Result<(), JsValue> {
+pub fn verify_proof(proof_bytes: &[u8], image_id_bytes: &[u8]) -> Result<u32, JsValue> {
     // deseralize proof into Receipt
     let receipt = Receipt::try_from_slice(proof_bytes)
         .map_err(|e| JsValue::from(format!("Bad receipt: {e}")))?;
@@ -27,5 +27,5 @@ pub fn verify_proof(proof_bytes: &[u8], image_id_bytes: &[u8]) -> Result<(), JsV
         .map_err(|e| JsValue::from(format!("Verify failed: {e}")))?;
 
     console::log_1(&"Proof verified successfully".into());
-    Ok(())
+    Ok(value)
 }

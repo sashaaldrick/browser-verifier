@@ -3,10 +3,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
-  const [msg, setMsg] = useState<string | null>(null);
+  const [localMsg, setLocalMsg] = useState<string | null>(null);
+  const [proofMsg, setProofMsg] = useState<string | null>(null);
 
   async function handleVerify() {
-    setMsg("verifying…");
+    setProofMsg("verifying…");
 
     // dynamic import keeps the code off the server bundle
     const { default: init, verify_proof } = await import(
@@ -26,16 +27,16 @@ export default function Home() {
 
     const t0 = performance.now();
     try {
-      verify_proof(proof, imageId);
+      const journalValue = verify_proof(proof, imageId);
+      const t1 = performance.now();
+      setProofMsg(`Proof verified in ${(t1-t0).toFixed(2)} ms\nJournal value: ${journalValue}`);
     } catch (e) {
       console.error(e);
-    }
-    const t1 = performance.now();
-    setMsg(`Proof verified in ${(t1-t0).toFixed(2)} ms`);
+      setProofMsg("Proof verification failed");
   }
 
   function fibBig(n: number) {
-    setMsg("Calculating…");
+    setLocalMsg("Calculating…");
     setTimeout(() => {
       const t0 = performance.now();
       let a = 0n;
@@ -44,15 +45,16 @@ export default function Home() {
         [a, b] = [b, a + b];
       }
       const t1 = performance.now();
-      setMsg(`100000th Fibonacci has ${a.toString().length} digits (calculated in ${(t1-t0).toFixed(2)} ms)`);
+      setLocalMsg(`100000th Fibonacci has ${a.toString().length} digits (calculated in ${(t1-t0).toFixed(2)} ms)`);
     }, 0);
   }
 
   return (
     <main className="flex flex-col items-center gap-4 p-6">
       <Button onClick={() => fibBig(1000000)}>Calculate 100000th Fibonacci</Button>
-      {msg && <p>{msg}</p>}
+      {localMsg && <p>{localMsg}</p>}
       <Button onClick={handleVerify}>Verify Proof</Button>
+      {proofMsg && <p>{proofMsg}</p>}
     </main>
   );
 }

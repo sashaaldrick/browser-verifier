@@ -35,6 +35,7 @@ function takeFromExternrefTable0(idx) {
 /**
  * @param {Uint8Array} proof_bytes
  * @param {Uint8Array} image_id_bytes
+ * @returns {number}
  */
 export function verify_proof(proof_bytes, image_id_bytes) {
     const ptr0 = passArray8ToWasm0(proof_bytes, wasm.__wbindgen_malloc);
@@ -42,9 +43,10 @@ export function verify_proof(proof_bytes, image_id_bytes) {
     const ptr1 = passArray8ToWasm0(image_id_bytes, wasm.__wbindgen_malloc);
     const len1 = WASM_VECTOR_LEN;
     const ret = wasm.verify_proof(ptr0, len0, ptr1, len1);
-    if (ret[1]) {
-        throw takeFromExternrefTable0(ret[0]);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
     }
+    return ret[0] >>> 0;
 }
 
 async function __wbg_load(module, imports) {

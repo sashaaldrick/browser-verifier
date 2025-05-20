@@ -24,7 +24,6 @@ fn fib_pair(n: u32) -> (BigUint, BigUint) {
 fn main() {
     let n: u32 = env::read();
 
-    let start = env::cycle_count();
     // compute F_n exactly
     let (f_n, _) = fib_pair(n);
 
@@ -32,8 +31,6 @@ fn main() {
     let s = f_n.to_str_radix(10);
     let digit_count = s.len() as u32;
 
-    let end = env::cycle_count();
-    eprintln!("my_operation_to_measure: {}", end - start);
     // only commit the digit count
     env::commit(&digit_count);
 }
