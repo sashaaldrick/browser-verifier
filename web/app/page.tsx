@@ -2,12 +2,14 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { JsCodeBlock } from "@/components/js-code-block"
-import { RustCodeBlock } from "@/components/rust-code-block"
+// import { JsCodeBlock } from "@/components/js-code-block"
+import { TabbedCodeBlock } from "@/components/tabbed-code-block"
 
 export default function Home() {
   const [localMsg, setLocalMsg] = useState<string | null>(null);
   const [proofMsg, setProofMsg] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("wasm");
+  const [fibCalcTimeMs, setFibCalcTimeMs] = useState<number | null>(null);
 
   async function handleVerify() {
     setProofMsg("Verifying Proof");
@@ -21,18 +23,26 @@ export default function Home() {
     await init();
 
     // get the binary blobs you already have in /public/proof_data
-    const proof = new Uint8Array(
-      await fetch("/proof_data/receipt.bin").then(r => r.arrayBuffer())
-    );
-    const imageId = new Uint8Array(
-      await fetch("/proof_data/image_id.bin").then(r => r.arrayBuffer())
-    );
+    const proofResponse = await fetch("/proof_data/receipt.bin");
+    const proof = new Uint8Array(await proofResponse.arrayBuffer());
+
+    const imageIdResponse = await fetch("/proof_data/image_id.bin");
+    const imageId = new Uint8Array(await imageIdResponse.arrayBuffer());
 
     const t0 = performance.now();
     try {
       const journalValue = verify_proof(proof, imageId);
       const t1 = performance.now();
-      setProofMsg(`Proof verified in ${(t1 - t0).toFixed(2)} ms\nJournal value: ${journalValue}`);
+      const verificationTimeMs = t1 - t0;
+      
+      let message = `Proof verified in ${verificationTimeMs.toFixed(2)} ms\nThe 1000000th Fibonacci number is proven to have ${journalValue} digits.`;
+      
+      if (fibCalcTimeMs !== null) {
+        const speedup = (fibCalcTimeMs / verificationTimeMs).toFixed(2);
+        message += `\nProof verification was ${speedup} times quicker than calculating locally.`;
+      }
+      
+      setProofMsg(message);
     } catch (e) {
       console.error(e);
       setProofMsg("Proof verification failed");
@@ -49,25 +59,50 @@ export default function Home() {
         [a, b] = [b, a + b];
       }
       const t1 = performance.now();
-      setLocalMsg(`100000th Fibonacci has ${a.toString().length} digits (calculated in ${(t1 - t0).toFixed(2)} ms)`);
+      const calcTimeMs = t1 - t0;
+      setFibCalcTimeMs(calcTimeMs);
+      setLocalMsg(`${n}th Fibonacci has ${a.toString().length} digits (calculated in ${(calcTimeMs / 1000).toFixed(3)} seconds)`);
     }, 0);
   }
 
   return (
-    <main className="flex flex-col items-top gap-4 p-6">
-      {/* <div className="flex flex-col items-center"> */}
-      {/*   <JsCodeBlock title="Fibonacci JS Code" /> */}
-      {/*   <Button onClick={() => fibBig(1000000)}>Calculate 100000th Fibonacci</Button> */}
-      {/*   <div className="mt-4"> */}
-      {/*     {localMsg && <p>{localMsg}</p>} */}
-      {/*   </div> */}
-      {/* </div> */}
+    <main className="flex flex-col items-center gap-4 p-6">
       <div className="flex flex-col items-center">
-        <RustCodeBlock />
-        <Button onClick={handleVerify}>Verify Proof</Button>
-        <div className="mt-4">
-          {proofMsg && <p>{proofMsg}</p>}
-        </div>
+        <TabbedCodeBlock activeTab={activeTab} onTabChange={setActiveTab} />
+
+        {activeTab === "fibonacci" && (
+          <>
+            <Button onClick={() => fibBig(1000000)}>Calculate 1000000th Fibonacci</Button>
+            <div className="mt-4">
+              {localMsg ? (
+                <div className="flex flex-col gap-2">
+                  {localMsg.split('\n').map((line, index) => (
+                    <p key={index} className={index === 0 ? "text-center font-medium" : "whitespace-pre-line"}>
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </>
+        )}
+
+        {activeTab === "wasm" && (
+          <>
+            <Button onClick={handleVerify}>Verify Proof</Button>
+            <div className="mt-4">
+              {proofMsg ? (
+                <div className="flex flex-col gap-2">
+                  {proofMsg.split('\n').map((line, index) => (
+                    <p key={index} className={index === 0 ? "text-center font-medium" : "whitespace-pre-line"}>
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </>
+        )}
       </div>
     </main>
   );

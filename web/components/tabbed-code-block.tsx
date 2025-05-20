@@ -1,39 +1,22 @@
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { Check, Copy } from "lucide-react"
-import { useState } from "react"
+import { useState, Dispatch, SetStateAction } from "react"
 import { Highlight, themes } from "prism-react-renderer"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-interface RustCodeBlockProps {
-  title?: string;
-}
-
-const verifierSource = `#[wasm_bindgen]
-pub fn verify_proof(proof_bytes: &[u8], image_id_bytes: &[u8]) -> Result<u32, JsValue> {
-    // deseralize proof into Receipt
-    let receipt = Receipt::try_from_slice(proof_bytes)
-        .map_err(|e| JsValue::from(format!("Bad receipt: {e}")))?;
-
-    // decode and log journal value
-    let value: u32 = receipt
-        .journal
-        .decode()
-        .map_err(|e| JsValue::from(format!("Journal decode: {e}")))?;
-    console::log_1(&format!("Decoded journal value = {value}").into());
-
-    // deseralize and log image ID
-    let image_id = Digest::try_from_slice(image_id_bytes)
-        .map_err(|_| JsValue::from("ImageID not 32 bytes"))?;
-    console::log_1(&format!("Image ID: 0x{image_id}").into());
-
-    // verify proof
-    receipt
-        .verify(image_id)
-        .map_err(|e| JsValue::from(format!("Verify failed: {e}")))?;
-
-    console::log_1(&"Proof verified successfully".into());
-    Ok(value)
+const fibonacciSource = `function fibBig(n: number) {
+  setLocalMsg("Calculating…");
+  setTimeout(() => {
+    const t0 = performance.now();
+    let a = 0n;
+    let b = 1n;
+    for (let i = 0; i < n; i++) {
+      [a, b] = [b, a + b];
+    }
+    const t1 = performance.now();
+    setLocalMsg(\`\${n}th Fibonacci has \${a.toString().length} digits (calculated in \${(t1-t0).toFixed(2)} ms)\`);
+  }, 0);
 }`;
 
 const guestSource = `/// fast-doubling fib in O(log n) multiplications
@@ -70,15 +53,63 @@ fn main() {
 }
 `
 
-export function RustCodeBlock({ title }: RustCodeBlockProps) {
+const verifierSource = `#[wasm_bindgen]
+pub fn verify_proof(proof_bytes: &[u8], image_id_bytes: &[u8]) -> Result<u32, JsValue> {
+    // deseralize proof into Receipt
+    let receipt = Receipt::try_from_slice(proof_bytes)
+        .map_err(|e| JsValue::from(format!("Bad receipt: {e}")))?;
+
+    // decode and log journal value
+    let value: u32 = receipt
+        .journal
+        .decode()
+        .map_err(|e| JsValue::from(format!("Journal decode: {e}")))?;
+    console::log_1(&format!("Decoded journal value = {value}").into());
+
+    // deseralize and log image ID
+    let image_id = Digest::try_from_slice(image_id_bytes)
+        .map_err(|_| JsValue::from("ImageID not 32 bytes"))?;
+    console::log_1(&format!("Image ID: 0x{image_id}").into());
+
+    // verify proof
+    receipt
+        .verify(image_id)
+        .map_err(|e| JsValue::from(format!("Verify failed: {e}")))?;
+
+    console::log_1(&"Proof verified successfully".into());
+    Ok(value)
+}`;
+
+interface TabbedCodeBlockProps {
+  activeTab?: string;
+  onTabChange?: Dispatch<SetStateAction<string>>;
+}
+
+export function TabbedCodeBlock({ activeTab, onTabChange }: TabbedCodeBlockProps) {
   const [copied, setCopied] = useState(false)
-  const [activeTab, setActiveTab] = useState("wasm")
+  const [internalActiveTab, setInternalActiveTab] = useState("wasm")
+  
+  const currentTab = activeTab || internalActiveTab;
+  
+  const handleTabChange = (value: string) => {
+    setInternalActiveTab(value);
+    if (onTabChange) {
+      onTabChange(value);
+    }
+  };
 
   const getCode = () => {
-    return activeTab === "wasm" ? verifierSource : guestSource;
+    switch (currentTab) {
+      case "wasm":
+        return verifierSource;
+      case "guest":
+        return guestSource;
+      case "fibonacci":
+        return fibonacciSource;
+      default:
+        return verifierSource;
+    }
   }
-
-  const language = 'rust';
 
   function handleCopy() {
     navigator.clipboard.writeText(getCode()).then(() => {
@@ -89,16 +120,39 @@ export function RustCodeBlock({ title }: RustCodeBlockProps) {
 
   return (
     <div className="relative my-4 border rounded-lg">
-      <Tabs defaultValue="wasm" onValueChange={setActiveTab} className="bg-muted rounded-t-lg w-full">
+      <Tabs value={currentTab} onValueChange={handleTabChange} className="bg-muted rounded-t-lg w-full">
         <TabsList className="px-2 pt-2">
-          <TabsTrigger value="wasm">WASM Verifier</TabsTrigger>
           <TabsTrigger value="guest">Guest Program</TabsTrigger>
+          <TabsTrigger value="fibonacci">Fibonacci JS</TabsTrigger>
+          <TabsTrigger value="wasm">WASM Verifier</TabsTrigger>
         </TabsList>
-        <TabsContent value="wasm" className="relative max-w-[600px]">
-          <ScrollArea className="">
+        <TabsContent value="fibonacci" className="relative w-[600px]">
+          <ScrollArea>
+            <Highlight
+              code={fibonacciSource.trim()}
+              language={'javascript'}
+              theme={themes.dracula}
+            >
+              {({ className, style, tokens, getLineProps, getTokenProps }) => (
+                <pre className={`${className} p-4 text-sm`} style={style}>
+                  {tokens.map((line, i) => (
+                    <div key={i} {...getLineProps({ line })}>
+                      {line.map((tok, key) => (
+                        <span key={key} {...getTokenProps({ token: tok })} />
+                      ))}
+                    </div>
+                  ))}
+                </pre>
+              )}
+            </Highlight>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        </TabsContent>
+        <TabsContent value="wasm" className="relative w-[600px]">
+          <ScrollArea>
             <Highlight
               code={verifierSource.trim()}
-              language={language as any}
+              language={'rust'}
               theme={themes.dracula}
             >
               {({ className, style, tokens, getLineProps, getTokenProps }) => (
@@ -120,7 +174,7 @@ export function RustCodeBlock({ title }: RustCodeBlockProps) {
           <ScrollArea className="">
             <Highlight
               code={guestSource.trim()}
-              language={language as any}
+              language={'rust'}
               theme={themes.dracula}
             >
               {({ className, style, tokens, getLineProps, getTokenProps }) => (
