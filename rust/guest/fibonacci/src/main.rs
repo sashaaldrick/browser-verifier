@@ -1,19 +1,39 @@
+use num_bigint::BigUint;
+use num_traits::{One, Zero};
 use risc0_zkvm::guest::env;
 
-fn main() {
-    // read the input
-    let input: u32 = env::read();
-
-    // create Fibonacci array with length denoted by input
-    let mut seq: Vec<i32> = vec![0; (input + 1) as usize];
-    seq[0] = 0;
-    seq[1] = 1;
-
-    // fill in the Fibonacci array
-    for i in 2..=input as usize {
-        seq[i] = seq[i - 2] + seq[i - 1]
+/// fast-doubling fib in O(log n) multiplications
+fn fib_pair(n: u32) -> (BigUint, BigUint) {
+    if n == 0 {
+        (BigUint::zero(), BigUint::one())
+    } else {
+        let (a, b) = fib_pair(n >> 1);
+        // F(2k) = F(k) * (2·F(k+1) – F(k))
+        let two_b_minus_a = &b * 2u32 - &a;
+        let c = &a * two_b_minus_a;
+        // F(2k+1) = F(k)^2 + F(k+1)^2
+        let d = &a * &a + &b * &b;
+        if n & 1 == 0 {
+            (c, d)
+        } else {
+            (d.clone(), c + d)
+        }
     }
+}
 
-    // write F_input to the journal
-    env::commit(&seq[input as usize]);
+fn main() {
+    let n: u32 = env::read();
+
+    let start = env::cycle_count();
+    // compute F_n exactly
+    let (f_n, _) = fib_pair(n);
+
+    // decimal-serialize and count digits
+    let s = f_n.to_str_radix(10);
+    let digit_count = s.len() as u32;
+
+    let end = env::cycle_count();
+    eprintln!("my_operation_to_measure: {}", end - start);
+    // only commit the digit count
+    env::commit(&digit_count);
 }

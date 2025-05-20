@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 risc0-zkvm = { version = "2.0.2", default-features = false, features = ['std'] }
+num-bigint = "0.4"
+num-traits = "0.2"

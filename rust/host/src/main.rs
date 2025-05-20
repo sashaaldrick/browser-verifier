@@ -10,7 +10,7 @@ fn main() {
         .with_env_filter(tracing_subscriber::filter::EnvFilter::from_default_env())
         .init();
 
-    let input: u32 = 15;
+    let input: u32 = 1000000;
     let env = ExecutorEnv::builder()
         .write(&input)
         .unwrap()
@@ -28,7 +28,8 @@ fn main() {
         .receipt;
 
     let output: u32 = receipt.journal.decode().unwrap();
-    assert_eq!(input, output);
+    println!("Fibonacci({}) has {} digits", input, output);
+    assert_eq!(208988, output);
 
     // serialize the receipt into bytes
     let receipt_bytes = to_vec(&receipt).expect("Serialization failed");
