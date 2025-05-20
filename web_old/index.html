@@ -11,8 +11,8 @@
     await init();
 
     // creates the proof (receipt) and image ID arrays
-    const proof = new Uint8Array(await fetch("image_data_STARK.bin").then(r => r.arrayBuffer()));
-    const imageId   = new Uint8Array(await fetch("image_id.bin").then(r => r.arrayBuffer()));
+    const proof = new Uint8Array(await fetch("data/receipt.bin").then(r => r.arrayBuffer()));
+    const imageId   = new Uint8Array(await fetch("data/image_id.bin").then(r => r.arrayBuffer()));
 
     // verify proof
     try {
