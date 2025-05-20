@@ -34,14 +34,14 @@ export default function Home() {
       const journalValue = verify_proof(proof, imageId);
       const t1 = performance.now();
       const verificationTimeMs = t1 - t0;
-      
-      let message = `Proof verified in ${verificationTimeMs.toFixed(2)} ms\nThe 1000000th Fibonacci number is proven to have ${journalValue} digits.`;
-      
+
+      let message = `Proof verified in ${verificationTimeMs.toFixed(2)} ms\nThe 1000000th Fibonacci number was proven to have ${journalValue} digits.`;
+
       if (fibCalcTimeMs !== null) {
         const speedup = (fibCalcTimeMs / verificationTimeMs).toFixed(2);
         message += `\nProof verification was ${speedup} times quicker than calculating locally.`;
       }
-      
+
       setProofMsg(message);
     } catch (e) {
       console.error(e);
