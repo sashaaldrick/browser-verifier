@@ -34,6 +34,19 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to view the application.
 
+The `web/` directory contains a Next.js application that demonstrates in-browser proof verification:
+
+- Loads the WebAssembly verifier module from [pkg](./web/public/wasm/pkg/) (built by running `wasm-pack` on the [verifier](./rust/verifier/)) code).
+- Fetches the proof and image ID from [binary files](./web/public/proof_data/).
+- Provides UI for proof verification.
+- Displays verification result and time it took.
+- Displays a time comparison between direct calculation and proof verification.
+
+The web interface allows users to:
+1. Calculate the 1000000th Fibonacci number directly in the browser.
+2. Verify a pre-generated proof of the calculation in a fraction of the time.
+3. Compare the performance difference between direct calculation and proof verification.
+
 ## Rust Components
 
 The `rust/` directory contains the zero-knowledge proof system components:
@@ -92,20 +105,4 @@ wasm-pack build --release --target web --out-dir ../../web/public/wasm/pkg
 ```
 
 The output is in the `wasm/pkg/` directory in the public folder for the web app.
-
-## Web Application
-
-The `web/` directory contains a Next.js application that demonstrates in-browser proof verification:
-
-- Loads the WebAssembly verifier module
-- Fetches the proof and image ID from binary files
-- Provides UI for triggering proof verification
-- Displays verification results to the user
-- Offers comparison between direct calculation and proof verification
-
-The web interface allows users to:
-1. Calculate the 1000000th Fibonacci number directly in the browser
-2. Verify a pre-generated proof of the calculation
-3. Compare the performance difference between direct calculation and proof verification
-
 
