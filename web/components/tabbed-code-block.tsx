@@ -5,18 +5,20 @@ import { useState, Dispatch, SetStateAction } from "react"
 import { Highlight, themes } from "prism-react-renderer"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-const fibonacciSource = `function fibBig(n: number) {
-  setLocalMsg("Calculating…");
-  setTimeout(() => {
-    const t0 = performance.now();
-    let a = 0n;
-    let b = 1n;
-    for (let i = 0; i < n; i++) {
-      [a, b] = [b, a + b];
-    }
-    const t1 = performance.now();
-    setLocalMsg(\`\${n}th Fibonacci has \${a.toString().length} digits (calculated in \${(t1-t0).toFixed(2)} ms)\`);
-  }, 0);
+const fibonacciSource = `/** Return no. of digits and time taken to calculate for the nth Fibonacci number. */
+function calculateFibbonaci(n: number): { digits: number, timeMs: number } {
+  let a = 0n,
+    b = 1n;
+  const start = performance.now();
+
+  for (let i = 0; i < n; i++) {
+    [a, b] = [b, a + b];
+  }
+
+  return {
+    digits: a.toString().length,
+    timeMs: performance.now() - start,
+  };
 }`;
 
 const guestSource = `/// fast-doubling fib in O(log n) multiplications
@@ -88,9 +90,9 @@ interface TabbedCodeBlockProps {
 export function TabbedCodeBlock({ activeTab, onTabChange }: TabbedCodeBlockProps) {
   const [copied, setCopied] = useState(false)
   const [internalActiveTab, setInternalActiveTab] = useState("wasm")
-  
+
   const currentTab = activeTab || internalActiveTab;
-  
+
   const handleTabChange = (value: string) => {
     setInternalActiveTab(value);
     if (onTabChange) {
@@ -123,14 +125,14 @@ export function TabbedCodeBlock({ activeTab, onTabChange }: TabbedCodeBlockProps
       <Tabs value={currentTab} onValueChange={handleTabChange} className="bg-muted rounded-t-lg w-full">
         <TabsList className="px-2 pt-2">
           <TabsTrigger value="guest">Guest Program</TabsTrigger>
-          <TabsTrigger value="fibonacci">Fibonacci JS</TabsTrigger>
+          <TabsTrigger value="fibonacci">Fibonacci TS</TabsTrigger>
           <TabsTrigger value="wasm">WASM Verifier</TabsTrigger>
         </TabsList>
         <TabsContent value="fibonacci" className="relative w-[600px]">
           <ScrollArea>
             <Highlight
               code={fibonacciSource.trim()}
-              language={'javascript'}
+              language={'typescript'}
               theme={themes.dracula}
             >
               {({ className, style, tokens, getLineProps, getTokenProps }) => (

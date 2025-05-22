@@ -1,109 +1,117 @@
 "use client";
-import { useState } from "react";
+
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area"
-// import { JsCodeBlock } from "@/components/js-code-block"
-import { TabbedCodeBlock } from "@/components/tabbed-code-block"
+import { TabbedCodeBlock } from "@/components/tabbed-code-block";
+
+type Tab = "fibonacci" | "wasm";
+const TARGET_N = 1_000_000;
+
+/** Return no. of digits and time taken to calculate for the nth Fibonacci number. */
+function calculateFibbonaci(n: number): { digits: number, timeMs: number } {
+  let a = 0n,
+    b = 1n;
+  const start = performance.now();
+
+  for (let i = 0; i < n; i++) {
+    [a, b] = [b, a + b];
+  }
+
+  return {
+    digits: a.toString().length,
+    timeMs: performance.now() - start,
+  };
+}
 
 export default function Home() {
-  const [localMsg, setLocalMsg] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>("wasm");
+  const [fibMsg, setFibMsg] = useState<string | null>(null);
+  const [fibTimeMs, setFibTimeMs] = useState<number | null>(null);
   const [proofMsg, setProofMsg] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("wasm");
-  const [fibCalcTimeMs, setFibCalcTimeMs] = useState<number | null>(null);
 
-  async function handleVerify() {
-    setProofMsg("Verifying Proof");
+  const renderMsg = (msg: string | null) =>
+    msg && (
+      <div className="mt-4 flex flex-col gap-2">
+        {msg.split("\n").map((line, i) => (
+          <p
+            key={i}
+            className={i === 0 ? "text-center font-medium" : "whitespace-pre-line"}
+          >
+            {line}
+          </p>
+        ))}
+      </div>
+    );
 
-    // dynamic import keeps the code off the server bundle
+  const handleFib = useCallback(() => {
+    setFibMsg("Calculating…");
+
+    setTimeout(() => {
+      const { digits, timeMs } = calculateFibbonaci(TARGET_N);
+      setFibTimeMs(timeMs);
+
+      setFibMsg(
+        `${TARGET_N.toLocaleString()}th Fibonacci has ${digits.toLocaleString()} digits (calculated in ${(timeMs / 1000).toFixed(3)} s)`
+      );
+    }, 0);
+  }, []);
+
+  const handleVerify = useCallback(async () => {
+    setProofMsg("Verifying proof…");
+
     const { default: init, verify_proof } = await import(
       /* webpackIgnore: true */ "/wasm/pkg/verifier.js"
     );
 
-    // load the .wasm file
     await init();
 
-    // get the binary blobs you already have in /public/proof_data
-    const proofResponse = await fetch("/proof_data/receipt.bin");
-    const proof = new Uint8Array(await proofResponse.arrayBuffer());
+    const [proofBuf, imageIdBuf] = await Promise.all(
+      ["/proof_data/receipt.bin", "/proof_data/image_id.bin"].map(async (url) => {
+        const res = await fetch(url);
+        return new Uint8Array(await res.arrayBuffer());
+      })
+    );
 
-    const imageIdResponse = await fetch("/proof_data/image_id.bin");
-    const imageId = new Uint8Array(await imageIdResponse.arrayBuffer());
-
-    const t0 = performance.now();
+    const start = performance.now();
     try {
-      const journalValue = verify_proof(proof, imageId);
-      const t1 = performance.now();
-      const verificationTimeMs = t1 - t0;
+      const digits = verify_proof(proofBuf, imageIdBuf);
+      const timeMs = performance.now() - start;
 
-      let message = `Proof verified in ${verificationTimeMs.toFixed(2)} ms\nThe 1000000th Fibonacci number was proven to have ${journalValue} digits.`;
+      let msg = `Proof verified in ${timeMs.toFixed(2)} ms\nThe ${TARGET_N.toLocaleString()}th Fibonacci number was proven to have ${digits.toLocaleString()} digits.`;
 
-      if (fibCalcTimeMs !== null) {
-        const speedup = (fibCalcTimeMs / verificationTimeMs).toFixed(2);
-        message += `\nProof verification was ${speedup} times quicker than calculating locally.`;
+      if (fibTimeMs !== null) {
+        msg += `\nProof verification was ${(fibTimeMs / timeMs).toFixed(
+          2
+        )}× faster than calculating locally.`;
       }
 
-      setProofMsg(message);
+      setProofMsg(msg);
     } catch (e) {
       console.error(e);
       setProofMsg("Proof verification failed");
     }
-  }
-
-  function fibBig(n: number) {
-    setLocalMsg("Calculating…");
-    setTimeout(() => {
-      const t0 = performance.now();
-      let a = 0n;
-      let b = 1n;
-      for (let i = 0; i < n; i++) {
-        [a, b] = [b, a + b];
-      }
-      const t1 = performance.now();
-      const calcTimeMs = t1 - t0;
-      setFibCalcTimeMs(calcTimeMs);
-      setLocalMsg(`${n}th Fibonacci has ${a.toString().length} digits (calculated in ${(calcTimeMs / 1000).toFixed(3)} seconds)`);
-    }, 0);
-  }
+  }, [fibTimeMs]);
 
   return (
     <main className="flex flex-col items-center gap-4 p-6">
-      <div className="flex flex-col items-center">
-        <TabbedCodeBlock activeTab={activeTab} onTabChange={setActiveTab} />
+      <TabbedCodeBlock activeTab={activeTab} onTabChange={setActiveTab} />
 
-        {activeTab === "fibonacci" && (
-          <>
-            <Button onClick={() => fibBig(1000000)}>Calculate 1000000th Fibonacci</Button>
-            <div className="mt-4">
-              {localMsg ? (
-                <div className="flex flex-col gap-2">
-                  {localMsg.split('\n').map((line, index) => (
-                    <p key={index} className={index === 0 ? "text-center font-medium" : "whitespace-pre-line"}>
-                      {line}
-                    </p>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          </>
-        )}
+      {activeTab === "fibonacci" && (
+        <>
+          <Button onClick={handleFib}>
+            Calculate {TARGET_N.toLocaleString()}th Fibonacci
+          </Button>
+          {renderMsg(fibMsg)}
+        </>
+      )}
 
-        {activeTab === "wasm" && (
-          <>
-            <Button onClick={handleVerify}>Verify Proof</Button>
-            <div className="mt-4">
-              {proofMsg ? (
-                <div className="flex flex-col gap-2">
-                  {proofMsg.split('\n').map((line, index) => (
-                    <p key={index} className={index === 0 ? "text-center font-medium" : "whitespace-pre-line"}>
-                      {line}
-                    </p>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          </>
-        )}
-      </div>
+      {activeTab === "wasm" && (
+        <>
+          <Button onClick={handleVerify}>Verify Proof</Button>
+          {renderMsg(proofMsg)}
+        </>
+      )}
     </main>
   );
 }
+
