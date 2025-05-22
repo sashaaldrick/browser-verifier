@@ -5,7 +5,7 @@ This repository contains a full-stack example for an in-browser ZK proof verifie
 The stack:
 - [R0VM](https://dev.risczero.com/api/zkvm/quickstart) for ZK proving.
 - [Next.JS](https://nextjs.org/) for the browser app.
-- [wasm-pack](https://github.com/rustwasm/wasm-pack) for building the [verifier library](./rust/verifier/src/lib.rs) to [browser compatible JS](./web/public/wasm/pkg/package.json
+- [wasm-pack](https://github.com/rustwasm/wasm-pack) for building the [verifier library](./rust/verifier/src/lib.rs) to [browser compatible JS](./web/public/wasm/pkg/package.json).
 
 ## Video Walkthrough
 
@@ -36,7 +36,7 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 The `web/` directory contains a Next.js application that demonstrates in-browser proof verification:
 
-- Loads the WebAssembly verifier module from [pkg](./web/public/wasm/pkg/) (built by running `wasm-pack` on the [verifier](./rust/verifier/)) code).
+- Loads the WebAssembly verifier module from [pkg](./web/public/wasm/pkg/) (see [Building the Verifier](#building-the-verifier)).
 - Fetches the proof and image ID from [binary files](./web/public/proof_data/).
 - Provides UI for proof verification.
 - Displays verification result and time it took.
