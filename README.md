@@ -5,7 +5,7 @@ This repository contains a full-stack example for an in-browser ZK proof verifie
 The stack:
 - [R0VM](https://dev.risczero.com/api/zkvm/quickstart) for ZK proving.
 - [Next.JS](https://nextjs.org/) for the browser app.
-- [wasm-pack](https://github.com/rustwasm/wasm-pack) for building the [verifier library](./rust/verifier/src/lib.rs) to [browser compatible JS](./web/public/wasm/pkg/).
+- [wasm-pack](https://github.com/rustwasm/wasm-pack) for building the [verifier library](./rust/verifier/src/lib.rs) to [browser compatible JS](./web/public/wasm/pkg/package.json
 
 ## Video Walkthrough
 
@@ -50,6 +50,11 @@ The host code is responsible for:
 - Serializing the proof and the imageID into binary files that can be used by the verifier in the browser.
 
 The host serializes these into 'receipt.bin' and 'image_id.bin' in the web application's public folder.
+
+### Running proving yourself 
+
+> 💡 **Tip: If you want to modify the example to run proving yourself**  
+> This example's host/guest use R0VM v2.0.2; if you want to run proving yourself, before following the instructions below, make sure to switch to the correct branch: `git checkout release-2.0`
 
 To run the host yourself:
 
