@@ -1,12 +1,19 @@
 # R0VM Browser Verifier
 
+This repository contains a full-stack example for an in-browser ZK proof verifier.
+
+The stack:
+- [R0VM](https://dev.risczero.com/api/zkvm/quickstart) for ZK proving.
+- [Next.JS](https://nextjs.org/) for the browser app.
+- [wasm-pack](https://github.com/rustwasm/wasm-pack) for building the [verifier library](./rust/verifier/src/lib.rs) to [browser compatible JS](./web/public/wasm/pkg/).
+
 ## Video Walkthrough
 
 [![Watch the video walkthrough](/web/public/thumbnail.png)](https://www.youtube.com/watch?v=aTCPCf8ff-c)
 
-This repository contains a monorepo for the R0VM Browser Verifier project, which demonstrates zero-knowledge proof verification in the browser. The project is organized into two main directories:
-
 ## Project Structure
+
+The project is organized into two main directories:
 
 ```
 browser_verifier/
