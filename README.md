@@ -1,8 +1,8 @@
 # R0VM Browser Verifier
 
-<a href="https://www.youtube.com/watch?v=aTCPCf8ff-c">
-  <img src="https://img.youtube.com/vi/aTCPCf8ff-c/hqdefault.jpg" width="480">
-</a>
+## Video Walkthrough
+
+[![Watch the video walkthrough](/web/public/thumbnail.jpg)](https://www.youtube.com/watch?v=aTCPCf8ff-c)
 
 This repository contains a monorepo for the R0VM Browser Verifier project, which demonstrates zero-knowledge proof verification in the browser. The project is organized into two main directories:
 
