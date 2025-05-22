@@ -1,5 +1,9 @@
 # R0VM Browser Verifier
 
+<a href="https://www.youtube.com/watch?v=aTCPCf8ff-c">
+  <img src="https://img.youtube.com/vi/aTCPCf8ff-c/hqdefault.jpg" width="480">
+</a>
+
 This repository contains a monorepo for the R0VM Browser Verifier project, which demonstrates zero-knowledge proof verification in the browser. The project is organized into two main directories:
 
 ## Project Structure
@@ -47,7 +51,7 @@ cd rust/
 cargo run --release
 ```
 
-This will overwrite the proof files in the web app which could cause failure. The binaries are included directly in the repo, so you shouldn't need to do this unless you're modifying things. If so, have fun!
+This will overwrite the proof files in the web app which could cause failure. The proof data files are included directly in the repo, so you shouldn't need to do this unless you're modifying things. The host is set up to save the necessary files straight to the correct `web/public/proof_data` folder. After you run the proving, you can go ahead and run the web app again with `npm run dev` and click 'Verify a Proof'. 
 
 ### verifier/
 
@@ -90,6 +94,6 @@ The `web/` directory contains a Next.js application that demonstrates in-browser
 The web interface allows users to:
 1. Calculate the 1000000th Fibonacci number directly in the browser
 2. Verify a pre-generated proof of the calculation
-3. Compare the performance difference between direct calculation and verification
+3. Compare the performance difference between direct calculation and proof verification
 
 
